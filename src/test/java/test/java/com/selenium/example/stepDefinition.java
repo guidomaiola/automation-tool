@@ -13,19 +13,14 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.firefox.internal.ProfilesIni;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import sun.security.util.PendingException;
 
 public class stepDefinition {
 
-  ProfilesIni allProfiles = null;
-  FirefoxProfile profile = null;
   WebDriver driver = null;
   WebElement enter = null;
   String OS = System.getProperty("os.name").toLowerCase();
@@ -39,10 +34,13 @@ public class stepDefinition {
       System.setProperty("webdriver.gecko.driver",
           "src/test/resources/com/selenium/example/linux/geckodriver");
     }
-    allProfiles = new ProfilesIni();
-    profile = allProfiles.getProfile("skipssl");
-    driver = new FirefoxDriver(profile);
-    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+    
+    DesiredCapabilities capabilities = new DesiredCapabilities();
+    capabilities.setBrowserName("firefox");
+    capabilities.setCapability("acceptInsecureCerts", true);
+    
+    driver = new FirefoxDriver(capabilities);
+    driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS).implicitlyWait(30, TimeUnit.SECONDS);
   }
 
   @After
@@ -54,15 +52,6 @@ public class stepDefinition {
   public void i_navigate_to(String url) throws Throwable {
     setUp();
     driver.get(url);
-    driver.wait(20000);
-  }
-
-  @Given("^I navigate to \"([^\"]*)\" in headless browser$")
-  public void i_navigate_to_in_headless_browser(String url) throws Throwable {
-    HtmlUnitDriver driver = new HtmlUnitDriver();
-    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
-    driver.get(url);
-    throw new PendingException();
   }
 
   @Given("^I press enter into field having xpath \"([^\"]*)\"$")
@@ -71,10 +60,10 @@ public class stepDefinition {
     element.click();
   }
 
-  @Given("^I press enter into field having id \"([^\"]*)\"$")
+  @Given("^I press enter into element with id \"([^\"]*)\"$")
   public void i_press_enter_into_input_field_having_id(String id) throws Throwable {
     WebElement element = driver.findElement(By.id(id));
-    element.click();
+    element.sendKeys(Keys.ENTER);
   }
 
   @Given("^I enter \"([^\"]*)\" into input field having xpath \"([^\"]*)\"$")
@@ -85,13 +74,6 @@ public class stepDefinition {
   @Given("^I enter \"([^\"]*)\" into input field having id \"([^\"]*)\"$")
   public void i_enter_into_input_field_having_id(String fname, String id) throws Throwable {
     driver.findElement(By.id(id)).sendKeys(fname);
-  }
-
-  @When("^I press Login$")
-  public void i_press_Login() throws Throwable {
-    System.out.println("hi");
-    enter = driver.findElement(By.xpath("//*[@id='loginForm']/button"));
-    enter.sendKeys(Keys.RETURN);
   }
 
   @When("^I wait for (\\d+) sec$")
